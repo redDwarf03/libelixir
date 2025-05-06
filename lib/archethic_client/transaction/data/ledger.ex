@@ -1,6 +1,11 @@
 defmodule ArchethicClient.TransactionData.Ledger do
   @moduledoc """
-  Represents transaction ledger movements
+  Represents ledger movements within a transaction, encompassing both UCO (native currency)
+  and token transfers.
+
+  This struct aggregates `UCOLedger` and `TokenLedger` data, providing a unified view
+  of all asset movements in a transaction. It includes functions for serialization
+  and map conversion.
   """
 
   alias __MODULE__.TokenLedger
@@ -60,6 +65,15 @@ defmodule ArchethicClient.TransactionData.Ledger do
   def serialize(%__MODULE__{uco: uco_ledger, token: token_ledger}),
     do: <<UCOLedger.serialize(uco_ledger)::binary, TokenLedger.serialize(token_ledger)::binary>>
 
+  @doc """
+  Converts a `Ledger` struct or `nil` into a map representation.
+
+  - If the input `ledger` is a `Ledger` struct, it converts the nested `uco` and `token`
+    ledgers to their map representations using their respective `to_map` functions.
+  - If `nil` is provided, it returns a map where `uco` and `token` fields are the results
+    of calling `to_map` on newly created empty `UCOLedger` and `TokenLedger` structs,
+    effectively providing a default empty map structure for the ledger.
+  """
   @spec to_map(ledger :: t() | nil) :: map()
   def to_map(nil) do
     %{

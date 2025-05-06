@@ -1,6 +1,12 @@
 defmodule ArchethicClient.TransactionData.Ledger.UCOLedger.Transfer do
   @moduledoc """
-  Represents a UCO transfer
+  Represents a single transfer of UCO (the native currency) within a transaction.
+
+  Each UCO transfer specifies:
+  - `to`: The recipient address for the UCO.
+  - `amount`: The quantity of UCO to transfer (in its smallest unit, UCOents, where 1 UCO = 10^8 UCOents).
+
+  This module provides functions for serializing UCO transfer data and converting it to a map.
   """
 
   alias ArchethicClient.Crypto
@@ -8,10 +14,9 @@ defmodule ArchethicClient.TransactionData.Ledger.UCOLedger.Transfer do
   defstruct [:to, :amount]
 
   @typedoc """
-  Transfer is composed from:
-  - to: receiver address of the UCO
-  - amount: specify the number of UCO to transfer to the recipients (in the smallest unit 10^-8)
-  - conditions: specify to which address the UCO can be used
+  A UCO transfer is composed of:
+  - `to`: The recipient `Crypto.address/0` of the UCO.
+  - `amount`: The non-negative integer amount of UCO to transfer (in the smallest unit, 10^-8).
   """
   @type t :: %__MODULE__{
           to: Crypto.address(),
@@ -35,6 +40,20 @@ defmodule ArchethicClient.TransactionData.Ledger.UCOLedger.Transfer do
   """
   def serialize(%__MODULE__{to: to, amount: amount}), do: <<to::binary, amount::64>>
 
+  @doc """
+  Converts a UCO `Transfer` struct to a map representation.
+
+  The `to` address is Base16 encoded in the resulting map.
+
+  ## Examples
+
+      iex> transfer_data = %ArchethicClient.TransactionData.Ledger.UCOLedger.Transfer{
+      ...>   to: <<0, 1, 2, 3>>,
+      ...>   amount: 100
+      ...> }
+      ...> ArchethicClient.TransactionData.Ledger.UCOLedger.Transfer.to_map(transfer_data)
+      %{to: "00010203", amount: 100}
+  """
   @spec to_map(uco_transfer :: t()) :: map()
   def to_map(%__MODULE__{to: to, amount: amount}), do: %{to: Base.encode16(to), amount: amount}
 end

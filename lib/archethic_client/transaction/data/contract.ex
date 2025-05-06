@@ -1,9 +1,13 @@
 defmodule ArchethicClient.TransactionData.Contract do
   @moduledoc """
-  Represents a smart contract defnition
+  Represents the definition of a smart contract within a transaction.
 
-  - bytecode: the byte code of the compilied wasm code
-  - manifest: the description of the contract functions
+  A contract is primarily defined by its:
+  - `bytecode`: The compiled WebAssembly (WASM) code of the contract.
+  - `manifest`: A map describing the contract's functions, state, and upgrade options (ABI).
+
+  This module provides functions to serialize and deserialize contract data, as well as
+  convert it to and from map representations.
   """
   alias ArchethicClient.Transaction
   alias ArchethicClient.Utils.TypedEncoding
@@ -50,14 +54,26 @@ defmodule ArchethicClient.TransactionData.Contract do
     {%__MODULE__{bytecode: bytecode, manifest: manifest}, rest}
   end
 
-  @doc false
+  @doc """
+  Casts a map or nil into a `ArchethicClient.TransactionData.Contract` struct.
+
+  If nil is provided, nil is returned.
+  If a map with `:bytecode` and `:manifest` keys is provided, a struct is returned.
+  Useful for creating a struct from parsed data.
+  """
   @spec cast(contract :: nil | map()) :: nil | t()
   def cast(nil), do: nil
 
   def cast(%{bytecode: bytecode, manifest: manifest}),
     do: %__MODULE__{bytecode: bytecode, manifest: manifest}
 
-  @doc false
+  @doc """
+  Converts a `ArchethicClient.TransactionData.Contract` struct or nil into a map representation.
+
+  If nil is provided, nil is returned.
+  The bytecode is Base16 encoded in the resulting map.
+  The manifest structure is preserved, with specific handling for `upgradeOpts`.
+  """
   @spec to_map(contract :: nil | t()) :: nil | map()
   def to_map(nil), do: nil
 

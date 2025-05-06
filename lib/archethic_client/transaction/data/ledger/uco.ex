@@ -1,6 +1,10 @@
 defmodule ArchethicClient.TransactionData.Ledger.UCOLedger do
   @moduledoc """
-  Represents a UCO ledger movement
+  Represents ledger movements specifically for UCO, the native currency of the Archethic network.
+
+  This struct holds a list of `ArchethicClient.TransactionData.Ledger.UCOLedger.Transfer`
+  records, detailing each UCO movement within a transaction.
+  It provides functions for serialization and map conversion of these UCO ledger entries.
   """
   alias __MODULE__.Transfer
   alias ArchethicClient.Utils.VarInt

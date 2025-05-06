@@ -1,8 +1,10 @@
 defmodule ArchethicClient.Transaction do
   @moduledoc """
-  Represents the main unit of the Archethic network and its Transaction Chain.
+  Defines the structure and functions for creating Archethic transactions.
 
-  Blocks are reduce to its unitary form to provide high scalability, avoiding double spending attack and chain integrity
+  A transaction is the fundamental unit of change on the Archethic network.
+  This module provides tools to build various transaction types, sign them,
+  and serialize them for network transmission.
   """
 
   alias ArchethicClient.API
@@ -97,7 +99,10 @@ defmodule ArchethicClient.Transaction do
   end
 
   @doc """
-  Return the payload for the previous signature
+  Generates the binary payload that needs to be signed by the previous private key.
+
+  This payload includes the transaction version, the new transaction address,
+  the serialized transaction type, and the serialized transaction data.
   """
   @spec previous_signature_payload(
           data :: TransactionData.t(),
@@ -122,6 +127,12 @@ defmodule ArchethicClient.Transaction do
       previous_public_key::binary, byte_size(previous_signature)::8, previous_signature::binary>>
   end
 
+  @doc """
+  Converts a transaction struct into a map representation.
+
+  The binary fields like address, public key, and signatures are hex-encoded.
+  The transaction type atom is converted to a string.
+  """
   @spec to_map(transaction :: t()) :: map()
   def to_map(%__MODULE__{} = tx) do
     %{
@@ -135,11 +146,18 @@ defmodule ArchethicClient.Transaction do
     }
   end
 
+  # Serializes the :keychain transaction type atom to its integer ID (255).
   defp serialize_type(:keychain), do: 255
+  # Serializes the :keychain_access transaction type atom to its integer ID (254).
   defp serialize_type(:keychain_access), do: 254
+  # Serializes the :transfer transaction type atom to its integer ID (253).
   defp serialize_type(:transfer), do: 253
+  # Serializes the :hosting transaction type atom to its integer ID (252).
   defp serialize_type(:hosting), do: 252
+  # Serializes the :token transaction type atom to its integer ID (251).
   defp serialize_type(:token), do: 251
+  # Serializes the :data transaction type atom to its integer ID (250).
   defp serialize_type(:data), do: 250
+  # Serializes the :contract transaction type atom to its integer ID (249).
   defp serialize_type(:contract), do: 249
 end

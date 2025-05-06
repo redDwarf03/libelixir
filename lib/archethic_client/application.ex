@@ -6,6 +6,13 @@ defmodule ArchethicClient.Application do
   use Application
 
   @impl true
+  @doc """
+  Starts the ArchethicClient application.
+
+  This function is called when the application starts and is responsible
+  for starting the necessary supervision tree, including registries and
+  supervisors for managing API subscriptions and tasks.
+  """
   def start(_type, _args) do
     childrens = [
       {Registry, name: ArchethicClient.API.SubscriptionRegistry, keys: :unique},

@@ -1,6 +1,10 @@
 defmodule ArchethicClient do
   @moduledoc """
-  Documentation for `ArchethicClient`.
+  The main module for the ArchethicClient library.
+
+  This module provides the primary API for interacting with the Archethic
+  blockchain. It offers functions to send requests, manage transactions,
+  query balances, and interact with smart contracts.
   """
 
   alias ArchethicClient.API
@@ -148,6 +152,10 @@ defmodule ArchethicClient do
     end
   end
 
+  # Sends the transaction and waits for a confirmation or error message
+  # from the network via subscriptions.
+  # Returns :ok if the transaction is confirmed,
+  # {:error, reason} if an error occurs or if the validation times out.
   defp send_tx_and_await_validation(transaction, opts, confirmed_ref, error_ref) do
     case transaction |> RequestHelper.send_transaction() |> request(opts) do
       {:ok, _} ->

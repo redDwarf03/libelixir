@@ -1,7 +1,30 @@
 defmodule ArchethicClient.TransactionData.Ownership do
   @moduledoc """
-  Represents an ownership of a secret and the authorized public keys able to
-  read the encrypted secret
+  Represents an ownership record for a secret within a transaction.
+
+  An ownership consists of:
+  - `secret`: The actual secret data (binary).
+  - `authorized_keys`: A map where keys are the public keys (`Crypto.key/0`) of entities
+    authorized to decrypt the `secret_key`, and values are the `secret_key` itself,
+    encrypted with the corresponding public key.
+
+  This module allows creating new ownership records, serializing them for inclusion
+  in a transaction, and converting them to a map representation.
+  The `secret_key` is an ephemeral key used to encrypt the main `secret` data if needed,
+  or it can be the secret itself if it's already in a suitable format for encryption via ECIES by multiple public keys.
+  Effectively, each authorized public key can decrypt its corresponding `encrypted_key` to get the `secret_key`,
+  which can then be used to decrypt the main `secret` (if the main `secret` itself was encrypted with this `secret_key`).
+  The current implementation in `new/3` directly stores the provided `secret` and encrypts the `secret_key` for each authorized public key.
+  This implies the `secret` field should perhaps be named `encrypted_secret_payload` if it were to be encrypted by `secret_key`,
+  or the `secret_key` is what is being shared, and `secret` is some metadata/identifier.
+  Given the example `secret = \"important message\"`, it seems `secret_key` is used to encrypt this message, and then `secret_key` itself is encrypted by `authorized_keys`.
+  However, the `new/3` implementation has `secret: secret` and encrypts `secret_key` with `public_key`.
+  This suggests `secret_key` is what is being shared to potentially decrypt the `secret` field later.
+  I will assume the `secret_key` is the item being encrypted and shared, and `secret` is some associated data.
+  If `secret` itself is to be encrypted by `secret_key`, that step is currently missing from `new/3`.
+
+  For now, documentation will reflect that `secret_key` is encrypted for each `authorized_key`.
+  The `secret` field will be documented as the data associated with this ownership, which might be plaintext or pre-encrypted.
   """
 
   alias ArchethicClient.Crypto
@@ -15,19 +38,23 @@ defmodule ArchethicClient.TransactionData.Ownership do
         }
 
   @doc """
-  Create a new ownership by passing its secret with its authorized keys
+  Create a new ownership by passing its secret, a list of authorized public keys,
+  and a secret key.
+
+  The `secret_key` is encrypted for each public key in `authorized_keys` using ECIES.
+  The provided `secret` is stored directly. If this `secret` needs to be encrypted
+  by the `secret_key`, that must be done by the caller before invoking this function.
 
   ## Examples
 
-      iex> secret_key = :crypto.strong_rand_bytes(32)
-      ...> secret = "important message"
-      ...> {pub, _pv} = Crypto.generate_deterministic_keypair("seed")
-      ...> %Ownership{authorized_keys: authorized_keys} = Ownership.new(secret, secret_key, [pub])
-      ...> Map.keys(authorized_keys)
-      [
-        <<0, 1, 241, 101, 225, 229, 247, 194, 144, 229, 47, 46, 222, 243, 251, 171, 96, 203, 174,
-          116, 191, 211, 39, 79, 142, 94, 225, 222, 51, 69, 201, 84, 161, 102>>
-      ]
+      iex> secret_data = \"important message\" # This is the data associated with the ownership
+      ...> secret_encryption_key = :crypto.strong_rand_bytes(32) # This key will be encrypted and shared
+      ...> {pub, _pv} = ArchethicClient.Crypto.generate_deterministic_keypair(\"seed\")
+      ...> ownership = ArchethicClient.TransactionData.Ownership.new(secret_data, [pub], secret_encryption_key)
+      ...> authorized_keys_map = ownership.authorized_keys
+      ...> {retrieved_pub, _encrypted_secret_key} = Enum.at(Map.to_list(authorized_keys_map), 0)
+      ...> retrieved_pub == pub
+      true
   """
   @spec new(secret :: binary(), authorized_keys :: list(Crypto.key()), secret_key :: binary()) :: t()
   def new(secret, authorized_keys, secret_key \\ :crypto.strong_rand_bytes(32)) do

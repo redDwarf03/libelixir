@@ -1,6 +1,9 @@
 defmodule ArchethicClient.APITest do
   @moduledoc """
-  Test module to mock Req request
+  Provides utilities for mocking `Req` HTTP requests during testing of the Archethic API client.
+
+  This module allows defining stubbed responses for HTTP requests, making it possible
+  to test API interactions without making actual network calls. It integrates with `Req.Test`.
   """
   alias ArchethicClient.Crypto
 
@@ -14,6 +17,16 @@ defmodule ArchethicClient.APITest do
     end)
   end
 
+  @doc """
+  A `Req.Test` plug callback used as the `:into` option to process the stubbed response data.
+
+  It decodes the term-to-binary data (which is a callback function provided to `stub/1`)
+  and then applies this callback to the original request(s) stored in `Req.Request`'s private data.
+  This allows the test to dynamically generate a response based on the request being mocked.
+
+  The `req` and `resp` arguments are part of the `Req.Test` plug interface.
+  `{:data, data}` is the term returned by the stub function defined in `stub/1`.
+  """
   def parse_resp({:data, data}, {req, resp}) do
     callback = :erlang.binary_to_term(data)
 
@@ -24,6 +37,8 @@ defmodule ArchethicClient.APITest do
     {:cont, {req, resp}}
   end
 
+  # Creates the response body by applying the callback to the request or list of requests.
+  # Used by `parse_resp/2`.
   defp create_resp_body(requests, callback) when is_list(requests), do: Enum.map(requests, &callback.(&1))
   defp create_resp_body(request, callback), do: callback.(request)
 

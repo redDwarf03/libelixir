@@ -1,6 +1,11 @@
 defmodule ArchethicClient.RequestHelper do
   @moduledoc """
-  Helper to create common request or subscription
+  Provides helper functions to easily construct common `ArchethicClient.Request` structs.
+
+  This module simplifies the creation of requests for frequent operations such as
+  fetching balances, calling smart contract functions, sending transactions,
+  and subscribing to transaction events (confirmation or error).
+  It abstracts the underlying `ArchethicClient.Graphql` or `ArchethicClient.RPC` struct creation.
   """
 
   alias ArchethicClient.Crypto
@@ -37,13 +42,13 @@ defmodule ArchethicClient.RequestHelper do
           opts :: contract_fun_opts()
         ) :: Request.t(RPC)
   def contract_function_call(address, function, args \\ [], opts \\ []) do
-    Keyword.validate!(opts, [:request_last?])
+    Keyword.validate!(opts, [:resolve_last?])
 
     params = %{
       "contract" => address,
       "function" => function,
       "args" => args,
-      "resolve_last" => Keyword.get(opts, :request_last?, true)
+      "resolve_last" => Keyword.get(opts, :resolve_last?, true)
     }
 
     %RPC{method: "contract_fun", params: params}

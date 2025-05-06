@@ -1,6 +1,16 @@
 defmodule ArchethicClient.TransactionData do
   @moduledoc """
-  Represents any transaction data block
+  Defines the structure and functions for managing the data payload of an Archethic transaction.
+
+  The `TransactionData` struct can contain various types of information, including:
+  - `recipients`: For smart contract interactions, specifying target addresses, actions, and arguments.
+  - `ledger`: Operations related to UCO (native currency) or other tokens (transfers).
+  - `contract`: The definition of a smart contract if the transaction deploys or modifies one.
+  - `ownerships`: Proofs of secret ownership, authorizing keys for access.
+  - `content`: Arbitrary binary data that can be stored on the blockchain.
+
+  This module provides functions to build up the transaction data, serialize it for inclusion
+  in a transaction, and convert it to a map representation.
   """
 
   alias __MODULE__.Contract
@@ -116,11 +126,18 @@ defmodule ArchethicClient.TransactionData do
       recipients_bin::binary, contract_bin::binary>>
   end
 
+  # Serializes the contract field.
+  # If the contract is nil, it writes a 0 byte (false flag).
+  # If a contract exists, it writes a 1 byte (true flag) followed by the serialized contract.
   defp serialize_contract_field(nil), do: <<0::8>>
   defp serialize_contract_field(%Contract{} = contract) do
     <<1::8, Contract.serialize(contract, 0)::bitstring>>
   end
 
+  @doc """
+  Converts `TransactionData` to a map representation.
+  If `nil` is provided, returns a map with default empty values.
+  """
   @spec to_map(t() | nil) :: map()
   def to_map(nil) do
     %{

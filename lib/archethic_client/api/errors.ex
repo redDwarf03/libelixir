@@ -1,6 +1,10 @@
 defmodule ArchethicClient.APIError do
   @moduledoc """
-  Represent an error from the API module
+  Represents a generic error originating from the `ArchethicClient.API` module.
+
+  This exception is typically raised for issues encountered during the setup or
+  execution of an API request before it reaches the network, or for issues that
+  don't fit into more specific error categories.
   """
 
   defexception [:request, :message]
@@ -8,7 +12,10 @@ end
 
 defmodule ArchethicClient.GraphqlError do
   @moduledoc """
-  Represent an error returned by the Archethic network using Graphql request
+  Represents an error returned by the Archethic network in response to a GraphQL request.
+
+  It includes information about the error message and optionally the location
+  within the GraphQL query where the error occurred.
   """
 
   defexception [:location, :message]
@@ -16,13 +23,21 @@ end
 
 defmodule ArchethicClient.RPCError do
   @moduledoc """
-  Represent an error returned by the Archethic network using RPC request
+  Represents an error returned by the Archethic network in response to an RPC request.
+
+  Contains the error message, a specific error code, and potentially additional data
+  related to the error.
   """
 
   defexception [:message, :code, :data]
 
+  @doc """
+  Formats the error message for an `RPCError`.
+
+  It combines the main error message with any nested messages found in the `data` field.
+  """
   def message(%__MODULE__{message: message, data: data}) do
-    messages = data |> stringify_data() |> IO.inspect()
+    messages = data |> stringify_data()
     Enum.join([message | messages], ": ")
   end
 
@@ -37,10 +52,18 @@ end
 
 defmodule ArchethicClient.ValidationError do
   @moduledoc """
-  Represent an error returned by the Archethic network when validating a transaction
+  Represents an error returned by the Archethic network during transaction validation.
+
+  This typically occurs after a transaction has been sent and the network
+  detects an issue with its content, signatures, or context.
   """
   defexception [:address, :context, :message, :code, :data]
 
+  @doc """
+  Formats the error message for a `ValidationError`.
+
+  Combines the context, main message, and any nested messages from the `data` field.
+  """
   def message(%__MODULE__{context: context, message: message, data: data}) do
     messages = stringify_data(data)
     Enum.join([context, message | messages], ": ")
@@ -68,7 +91,11 @@ end
 
 defmodule ArchethicClient.RequestError do
   @moduledoc """
-  Represent an error returned by the Archethic network
+  Represents an error related to an HTTP request, typically an unexpected HTTP status code.
+
+  This exception is raised when an HTTP request made by the client
+  receives a response status that indicates an error (e.g., 4xx or 5xx).
+  It includes the HTTP status and the response body.
   """
 
   # Inspired by Plug.Conn.Status
@@ -141,6 +168,12 @@ defmodule ArchethicClient.RequestError do
 
   defexception [:http_status, :body]
 
+  @doc """
+  Formats the error message for a `RequestError`.
+
+  If the body is empty, it uses a standard message for the HTTP status code.
+  Otherwise, it attempts to extract an error message from the body.
+  """
   @spec message(exception :: Exception.t()) :: message :: String.t()
   def message(%__MODULE__{http_status: status, body: ""}), do: Map.get(@statuses, status, "Unknown http status error")
 

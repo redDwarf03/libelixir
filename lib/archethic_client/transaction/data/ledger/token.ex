@@ -1,6 +1,10 @@
 defmodule ArchethicClient.TransactionData.Ledger.TokenLedger do
   @moduledoc """
-  Represents token ledger movements
+  Represents ledger movements specifically for fungible or non-fungible tokens.
+
+  This struct holds a list of `ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer`
+  records, detailing each token movement within a transaction.
+  It provides functions for serialization and map conversion of these token ledger entries.
   """
   alias __MODULE__.Transfer
   alias ArchethicClient.Utils.VarInt
@@ -8,8 +12,8 @@ defmodule ArchethicClient.TransactionData.Ledger.TokenLedger do
   defstruct transfers: []
 
   @typedoc """
-  UCO movement is composed from:
-  - Transfers: List of token transfers
+  Token ledger movement is composed from:
+  - `transfers`: A list of `ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer.t()` records.
   """
   @type t :: %__MODULE__{
           transfers: list(Transfer.t())
