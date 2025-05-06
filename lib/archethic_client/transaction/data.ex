@@ -121,9 +121,10 @@ defmodule ArchethicClient.TransactionData do
     encoded_recipients_len = recipients |> length() |> VarInt.from_value()
     contract_bin = serialize_contract_field(contract)
 
-    <<byte_size(content)::32, content::binary, encoded_ownership_len::binary,
-      ownerships_bin::binary, Ledger.serialize(ledger)::binary, encoded_recipients_len::binary,
-      recipients_bin::binary, contract_bin::binary>>
+    <<contract_bin::bitstring, byte_size(content)::32, content::binary,
+    encoded_ownership_len::binary, ownerships_bin::binary,
+    Ledger.serialize(ledger)::binary, encoded_recipients_len::binary,
+    recipients_bin::bitstring>>
   end
 
   # Serializes the contract field.
