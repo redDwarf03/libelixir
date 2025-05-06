@@ -65,4 +65,20 @@ defmodule ArchethicClient.Utils.TypedEncoding do
 
   defp sign_to_bit(num) when num >= 0, do: 1
   defp sign_to_bit(_num), do: 0
+
+  @spec deserialize(binary :: bitstring(), mode :: Transaction.serialization_mode()) ::
+  {arg(), bitstring()}
+  def deserialize(bin, :compact), do: do_deserialize(bin, 1)
+  def deserialize(bin, :extended), do: do_deserialize(bin, 8)
+
+
+  defp do_deserialize(<<@type_int::8, rest::bitstring>>, bit_size) do
+    <<sign_bit::integer-size(bit_size), rest::bitstring>> = rest
+    {int, rest} = VarInt.get_value(rest)
+    int = int * bit_to_sign(sign_bit)
+    {int, rest}
+  end
+
+  defp bit_to_sign(0), do: -1
+  defp bit_to_sign(1), do: 1
 end

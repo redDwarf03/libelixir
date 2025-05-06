@@ -60,7 +60,14 @@ defmodule ArchethicClient.TransactionData.Ledger do
   def serialize(%__MODULE__{uco: uco_ledger, token: token_ledger}),
     do: <<UCOLedger.serialize(uco_ledger)::binary, TokenLedger.serialize(token_ledger)::binary>>
 
-  @spec to_map(ledger :: t()) :: map()
+  @spec to_map(ledger :: t() | nil) :: map()
+  def to_map(nil) do
+    %{
+      uco: UCOLedger.to_map(%UCOLedger{}),
+      token: TokenLedger.to_map(%TokenLedger{})
+    }
+  end
+
   def to_map(%__MODULE__{uco: uco, token: token}) do
     %{
       uco: UCOLedger.to_map(uco),
