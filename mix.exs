@@ -4,8 +4,9 @@ defmodule ArchethicClient.MixProject do
   def project do
     [
       app: :archethic_client,
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.13",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       dialyzer: dialyzer(),
@@ -20,6 +21,10 @@ defmodule ArchethicClient.MixProject do
       mod: {ArchethicClient.Application, []}
     ]
   end
+
+  # Added function
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Specify dialyzer path
   defp dialyzer do
@@ -44,7 +49,8 @@ defmodule ArchethicClient.MixProject do
       {:plug, "~> 1.0", only: [:dev, :test]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:styler, "~> 1.0", only: [:dev, :test], runtime: false}
+      {:styler, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:mox, "~> 1.0", only: :test}
     ]
   end
 end

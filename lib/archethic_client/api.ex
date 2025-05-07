@@ -14,6 +14,10 @@ defmodule ArchethicClient.API do
   alias ArchethicClient.Subscription
   alias ArchethicClient.TaskSupervisor
 
+  if Mix.env() == :test do
+    @behaviour ArchethicClient.Test.Behaviors.API
+  end
+
   @type request_opts :: [base_url: String.t(), parent: pid()]
 
   @doc """

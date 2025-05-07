@@ -70,7 +70,7 @@ defmodule ArchethicClient.TransactionData.Ownership do
 
   ## Examples
 
-      iex> %Ownership{
+      iex> %ArchethicClient.TransactionData.Ownership{
       ...>   secret: <<205, 124, 251, 211, 28, 69, 249, 1, 58, 108, 16, 35, 23, 206, 198, 202>>,
       ...>   authorized_keys: %{
       ...>     <<0, 0, 229, 188, 159, 80, 100, 5, 54, 152, 137, 201, 204, 24, 22, 125, 76, 29, 83,
@@ -83,7 +83,7 @@ defmodule ArchethicClient.TransactionData.Ownership do
       ...>         224, 214, 225, 146, 44, 83, 111, 34, 239, 99>>
       ...>   }
       ...> }
-      ...> |> Ownership.serialize()
+      ...> |> ArchethicClient.TransactionData.Ownership.serialize()
       <<0, 0, 0, 16, 205, 124, 251, 211, 28, 69, 249, 1, 58, 108, 16, 35, 23, 206, 198, 202, 1, 1,
         0, 0, 229, 188, 159, 80, 100, 5, 54, 152, 137, 201, 204, 24, 22, 125, 76, 29, 83, 14, 154,
         60, 66, 69, 121, 97, 40, 215, 226, 204, 133, 54, 187, 9, 139, 100, 20, 32, 187, 77, 56, 30,

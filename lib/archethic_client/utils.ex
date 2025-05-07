@@ -11,16 +11,16 @@ defmodule ArchethicClient.Utils do
 
   ## Examples
 
-      iex> Utils.wrap_binary(<<1::1>>)
+      iex> ArchethicClient.Utils.wrap_binary(<<1::1>>)
       <<1::1, 0::1, 0::1, 0::1, 0::1, 0::1, 0::1, 0::1>>
 
-      iex> Utils.wrap_binary(<<33, 50, 10>>)
+      iex> ArchethicClient.Utils.wrap_binary(<<33, 50, 10>>)
       <<33, 50, 10>>
 
-      iex> Utils.wrap_binary([<<1::1, 1::1, 1::1>>, "hello"])
+      iex> ArchethicClient.Utils.wrap_binary([<<1::1, 1::1, 1::1>>, "hello"])
       <<1::1, 1::1, 1::1, 0::1, 0::1, 0::1, 0::1, 0::1, "hello"::binary>>
 
-      iex> Utils.wrap_binary([[<<1::1, 1::1, 1::1>>, "abc"], "hello"])
+      iex> ArchethicClient.Utils.wrap_binary([[<<1::1, 1::1, 1::1>>, "abc"], "hello"])
       <<1::1, 1::1, 1::1, 0::1, 0::1, 0::1, 0::1, 0::1, "abc"::binary, "hello"::binary>>
   """
   @spec wrap_binary(iodata() | bitstring() | list(bitstring())) :: binary()
@@ -45,10 +45,10 @@ defmodule ArchethicClient.Utils do
 
   ## Examples
 
-      iex> Utils.wrap_binary([<<1::1, 1::1, 1::1>>, "hello"], [])
+      iex> ArchethicClient.Utils.wrap_binary([<<1::1, 1::1, 1::1>>, "hello"], [])
       <<1::1, 1::1, 1::1, 0::1, 0::1, 0::1, 0::1, 0::1, "hello"::binary>>
 
-      iex> Utils.wrap_binary([[<<1::1, 1::1, 1::1>>, "abc"], "hello"], [])
+      iex> ArchethicClient.Utils.wrap_binary([[<<1::1, 1::1, 1::1>>, "abc"], "hello"], [])
       <<1::1, 1::1, 1::1, 0::1, 0::1, 0::1, 0::1, 0::1, "abc"::binary, "hello"::binary>>
   """
   @spec wrap_binary(data :: list(iodata() | bitstring() | list(bitstring())), acc :: list(binary())) :: binary()
@@ -88,7 +88,7 @@ defmodule ArchethicClient.Utils do
   """
   @spec from_bigint(bigint :: integer(), decimals :: non_neg_integer()) :: String.t()
   def from_bigint(bigint, decimals \\ 8),
-    do: bigint |> Decimal.new() |> Decimal.div(get_factor(decimals)) |> Decimal.to_string()
+    do: bigint |> Decimal.new() |> Decimal.div(get_factor(decimals)) |> Decimal.to_string(:normal)
 
   # Calculates the factor (10^decimals) for bigint conversions.
   defp get_factor(decimals), do: 10 |> :math.pow(decimals) |> trunc()

@@ -11,7 +11,9 @@ defmodule ArchethicClient.Transaction do
   alias ArchethicClient.Crypto
   alias ArchethicClient.TransactionData
 
-  @version 3
+  @type serialization_mode :: :compact | :extended
+
+  @version 1
 
   defstruct [
     :address,

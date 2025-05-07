@@ -37,13 +37,21 @@ defmodule ArchethicClient.Crypto.Ed25519 do
   def verify?(<<public_key::binary-32>>, data, sig) when (is_binary(data) or is_list(data)) and is_binary(sig),
     do: :crypto.verify(:eddsa, :sha512, data, sig, [public_key, :ed25519])
 
-  @spec convert_to_x25519_private_key(ed25519_private_key :: binary()) :: binary()
-  def convert_to_x25519_private_key(ed25519_private_key) do
-    {pub, pv} = generate_keypair(ed25519_private_key)
-    extended_secret_key = <<pv::binary, pub::binary>>
+  @spec convert_to_x25519_private_key(ed25519_seed :: binary()) :: binary()
+  def convert_to_x25519_private_key(ed25519_seed) when byte_size(ed25519_seed) == 32 do
+    # ed25519_seed is the 32-byte private seed key for Ed25519.
+    # The X25519 private key is derived from the first 32 bytes of SHA512(ed25519_seed),
+    # interpreted as a little-endian integer, then clamped, and encoded back to
+    # a 32-byte little-endian binary.
+    hashed_seed = :crypto.hash(:sha512, ed25519_seed) # 64-byte binary
 
-    <<digest32::little-size(256), _::binary-size(32)>> = :crypto.hash(:sha512, extended_secret_key)
-    <<clamp(digest32)::little-size(256)>>
+    # Extract the first 32 bytes and interpret as a little-endian integer.
+    <<scalar_to_clamp::little-integer-size(256), _rest_of_hash::binary-size(32)>> = hashed_seed
+
+    clamped_scalar_integer = clamp(scalar_to_clamp)
+
+    # Encode the clamped integer back to a 32-byte little-endian binary.
+    <<clamped_scalar_integer::little-integer-size(256)>>
   end
 
   @spec convert_to_x25519_public_key(ed25519_public_key :: binary()) :: binary()

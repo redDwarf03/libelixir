@@ -114,7 +114,6 @@ defmodule ArchethicClient.Utils.TypedEncoding do
   def deserialize(bin, :compact), do: do_deserialize(bin, 1)
   def deserialize(bin, :extended), do: do_deserialize(bin, 8)
 
-
   # Deserializes an integer.
   # Expects format: <@type_int::8><sign_bit::bit_size><varint_encoded_abs_value::bitstring>
   # Returns {deserialized_integer, rest_of_binary}
@@ -123,6 +122,65 @@ defmodule ArchethicClient.Utils.TypedEncoding do
     {int_val, rest_after_varint} = VarInt.get_value(rest_after_sign)
     deserialized_int = int_val * bit_to_sign(sign_bit)
     {deserialized_int, rest_after_varint}
+  end
+
+  # Deserializes a float.
+  # Expects format: <@type_float::8><sign_bit::bit_size><varint_encoded_abs_scaled_value::bitstring>
+  defp do_deserialize(<<@type_float::8, rest::bitstring>>, bit_size) do
+    <<sign_bit::integer-size(bit_size), rest_after_sign::bitstring>> = rest
+    {scaled_val, rest_after_varint} = VarInt.get_value(rest_after_sign)
+    float_val = (scaled_val * bit_to_sign(sign_bit)) / :math.pow(10, 8)
+    {float_val, rest_after_varint}
+  end
+
+  # Deserializes a binary string.
+  # Expects format: <@type_str::8><varint_encoded_length::binary><string_content::bitstring>
+  defp do_deserialize(<<@type_str::8, rest::bitstring>>, _bit_size) do
+    {size, rest_after_size_varint} = VarInt.get_value(rest)
+    <<str_content::binary-size(size), rest_after_string::bitstring>> = rest_after_size_varint
+    {str_content, rest_after_string}
+  end
+
+  # Deserializes a list.
+  # Expects format: <@type_list::8><varint_encoded_count::binary><serialized_element_1>...<serialized_element_N>
+  defp do_deserialize(<<@type_list::8, rest::bitstring>>, bit_size) do
+    {count, rest_after_count_varint} = VarInt.get_value(rest)
+    deserialize_list_elements(rest_after_count_varint, count, bit_size, [])
+  end
+
+  # Deserializes a map.
+  # Expects format: <@type_map::8><varint_encoded_pair_count::binary><serialized_key_1><serialized_value_1>...<serialized_key_N><serialized_value_N>
+  defp do_deserialize(<<@type_map::8, rest::bitstring>>, bit_size) do
+    {pair_count, rest_after_count_varint} = VarInt.get_value(rest)
+    deserialize_map_pairs(rest_after_count_varint, pair_count, bit_size, [])
+  end
+
+  # Deserializes a boolean.
+  # Expects format: <@type_bool::8><bool_value::bit_size>
+  defp do_deserialize(<<@type_bool::8, rest::bitstring>>, bit_size) do
+    <<bool_bit::integer-size(bit_size), rest_after_bool::bitstring>> = rest
+    {bool_bit == 1, rest_after_bool}
+  end
+
+  # Deserializes nil.
+  # Expects format: <@type_nil::8>
+  defp do_deserialize(<<@type_nil::8, rest::bitstring>>, _bit_size) do
+    {nil, rest}
+  end
+
+  # Helper to recursively deserialize list elements
+  defp deserialize_list_elements(binary, 0, _bit_size, acc), do: {Enum.reverse(acc), binary}
+  defp deserialize_list_elements(binary, count, bit_size, acc) when count > 0 do
+    {element, rest} = do_deserialize(binary, bit_size)
+    deserialize_list_elements(rest, count - 1, bit_size, [element | acc])
+  end
+
+  # Helper to recursively deserialize map key-value pairs
+  defp deserialize_map_pairs(binary, 0, _bit_size, acc_pairs), do: {Map.new(Enum.reverse(acc_pairs)), binary}
+  defp deserialize_map_pairs(binary, count, bit_size, acc_pairs) when count > 0 do
+    {key, rest_after_key} = do_deserialize(binary, bit_size)
+    {value, rest_after_value} = do_deserialize(rest_after_key, bit_size)
+    deserialize_map_pairs(rest_after_value, count - 1, bit_size, [{key, value} | acc_pairs])
   end
 
   # Converts a bit back to a sign multiplier (1 for bit 1, -1 for bit 0).

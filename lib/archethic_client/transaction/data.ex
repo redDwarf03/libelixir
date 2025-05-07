@@ -121,18 +121,18 @@ defmodule ArchethicClient.TransactionData do
     encoded_recipients_len = recipients |> length() |> VarInt.from_value()
     contract_bin = serialize_contract_field(contract)
 
-    <<contract_bin::bitstring, byte_size(content)::32, content::binary,
-    encoded_ownership_len::binary, ownerships_bin::binary,
-    Ledger.serialize(ledger)::binary, encoded_recipients_len::binary,
-    recipients_bin::bitstring>>
+    <<contract_bin::bitstring, byte_size(content)::32, content::binary, encoded_ownership_len::binary,
+      ownerships_bin::binary, Ledger.serialize(ledger)::binary, encoded_recipients_len::binary,
+      recipients_bin::bitstring>>
   end
 
   # Serializes the contract field.
   # If the contract is nil, it writes a 0 byte (false flag).
   # If a contract exists, it writes a 1 byte (true flag) followed by the serialized contract.
   defp serialize_contract_field(nil), do: <<0::8>>
+
   defp serialize_contract_field(%Contract{} = contract) do
-    <<1::8, Contract.serialize(contract, 0)::bitstring>>
+    <<1::8, Contract.serialize(contract, 1)::bitstring>>
   end
 
   @doc """
@@ -151,7 +151,13 @@ defmodule ArchethicClient.TransactionData do
   end
 
   @spec to_map(data :: t()) :: map()
-  def to_map(%__MODULE__{content: content, ledger: ledger, ownerships: ownerships, recipients: recipients, contract: contract}) do
+  def to_map(%__MODULE__{
+        content: content,
+        ledger: ledger,
+        ownerships: ownerships,
+        recipients: recipients,
+        contract: contract
+      }) do
     %{
       content: content,
       contract: Contract.to_map(contract),

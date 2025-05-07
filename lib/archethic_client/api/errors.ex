@@ -41,13 +41,19 @@ defmodule ArchethicClient.RPCError do
     Enum.join([message | messages], ": ")
   end
 
-  defp stringify_data(data, acc \\ [])
-  defp stringify_data(data, acc) when is_binary(data), do: [data | acc]
+  defp stringify_data(data) do
+    do_stringify_data(data, []) |> Enum.reverse()
+  end
 
-  defp stringify_data(%{"message" => message, "data" => data}, acc) when is_binary(message),
-    do: stringify_data(data, [message | acc])
-
-  defp stringify_data(_data, acc), do: Enum.reverse(acc)
+  defp do_stringify_data(data_item, acc) when is_binary(data_item) do
+    [data_item | acc]
+  end
+  defp do_stringify_data(%{"message" => msg, "data" => nested_data}, acc) when is_binary(msg) do
+    do_stringify_data(nested_data, [msg | acc])
+  end
+  defp do_stringify_data(_data_item, acc) do
+    acc
+  end
 end
 
 defmodule ArchethicClient.ValidationError do
@@ -69,13 +75,19 @@ defmodule ArchethicClient.ValidationError do
     Enum.join([context, message | messages], ": ")
   end
 
-  defp stringify_data(data, acc \\ [])
-  defp stringify_data(data, acc) when is_binary(data), do: [data | acc]
+  defp stringify_data(data) do
+    do_stringify_data(data, []) |> Enum.reverse()
+  end
 
-  defp stringify_data(%{"message" => message, "data" => data}, acc) when is_binary(message),
-    do: stringify_data(data, [message | acc])
-
-  defp stringify_data(_data, acc), do: Enum.reverse(acc)
+  defp do_stringify_data(data_item, acc) when is_binary(data_item) do
+    [data_item | acc]
+  end
+  defp do_stringify_data(%{"message" => msg, "data" => nested_data}, acc) when is_binary(msg) do
+    do_stringify_data(nested_data, [msg | acc])
+  end
+  defp do_stringify_data(_data_item, acc) do
+    acc
+  end
 
   @doc """
   Transform a map to a validation error exception

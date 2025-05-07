@@ -38,7 +38,7 @@ defmodule ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer do
 
   ## Examples
 
-      iex> %Transfer{
+      iex> %ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer{
       ...>   token_address:
       ...>     <<0, 0, 49, 101, 72, 154, 152, 3, 174, 47, 2, 35, 7, 92, 122, 206, 185, 71, 140, 74,
       ...>       197, 46, 99, 117, 89, 96, 100, 20, 0, 34, 181, 215, 143, 175>>,
@@ -48,7 +48,7 @@ defmodule ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer do
       ...>   amount: 1_050_000_000,
       ...>   token_id: 0
       ...> }
-      ...> |> Transfer.serialize()
+      ...> |> ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer.serialize()
       <<0, 0, 49, 101, 72, 154, 152, 3, 174, 47, 2, 35, 7, 92, 122, 206, 185, 71, 140, 74, 197, 46,
         99, 117, 89, 96, 100, 20, 0, 34, 181, 215, 143, 175, 0, 0, 104, 134, 142, 120, 40, 59, 99,
         108, 63, 166, 143, 250, 93, 186, 216, 117, 85, 106, 43, 26, 120, 35, 44, 137, 243, 184, 160,
@@ -67,7 +67,7 @@ defmodule ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer do
 
   ## Examples
 
-        iex> %Transfer{
+        iex> %ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer{
         ...>   token_address:
         ...>     <<0, 0, 49, 101, 72, 154, 152, 3, 174, 47, 2, 35, 7, 92, 122, 206, 185, 71, 140,
         ...>       74, 197, 46, 99, 117, 89, 96, 100, 20, 0, 34, 181, 215, 143, 175>>,
@@ -77,12 +77,12 @@ defmodule ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer do
         ...>   amount: 1_050_000_000,
         ...>   token_id: 0
         ...> }
-        ...> |> Transfer.to_map()
+        ...> |> ArchethicClient.TransactionData.Ledger.TokenLedger.Transfer.to_map()
         %{
-          tokenAddress: Base.encode16(token_address),
-          to: Base.encode16(to),
-          amount: amount,
-          tokenId: token_id
+          tokenAddress: "00003165489A9803AE2F0223075C7ACEB9478C4AC52E6375596064140022B5D78FAF",
+          to: "000068868E78283B636C3FA68FFA5DBAD875556A2B1A78232C89F3B8A0FBDF005D0E",
+          amount: 1_050_000_000,
+          tokenId: 0
         }
   """
   @spec to_map(token_transfer :: t()) :: map()

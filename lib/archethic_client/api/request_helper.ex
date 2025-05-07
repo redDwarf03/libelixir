@@ -14,6 +14,10 @@ defmodule ArchethicClient.RequestHelper do
   alias ArchethicClient.RPC
   alias ArchethicClient.Transaction
 
+  if Mix.env() == :test do
+    @behaviour ArchethicClient.Test.Behaviors.RequestHelper
+  end
+
   @typedoc """
   Options for the contract_function_call Request.
   - resolve_last? => boolean to resolve the last transaction of the provided contract address (default: true)
