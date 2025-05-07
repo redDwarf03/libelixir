@@ -18,6 +18,10 @@ defmodule ArchethicClient do
   alias ArchethicClient.Transaction
   alias ArchethicClient.ValidationError
 
+  # Get the real async helper module from config or use default
+  defp async_helper_module,
+    do: Application.get_env(:archethic_client, :async_helper_module, ArchethicClient.RealAsyncHelper)
+
   @tx_validation_timeout 60_000
 
   # Get the API module from config or use default
@@ -149,12 +153,12 @@ defmodule ArchethicClient do
 
     # Runs in a task to close web socket after transaction validation
     task =
-      Task.Supervisor.async_nolink(TaskSupervisor, fn ->
+      async_helper_module().async_nolink(TaskSupervisor, fn ->
         opts = Keyword.put(opts, :parent, self())
 
         subscriptions =
           TaskSupervisor
-          |> Task.Supervisor.async_stream_nolink([confirmed_sub, error_sub], &api_module().subscribe(&1, opts),
+          |> async_helper_module().async_stream_nolink([confirmed_sub, error_sub], &api_module().subscribe(&1, opts),
             on_timeout: :kill_task
           )
           |> Enum.map(fn
@@ -171,7 +175,8 @@ defmodule ArchethicClient do
         end
       end)
 
-    case Task.yield(task, @tx_validation_timeout * 2) || Task.shutdown(task, :brutal_kill) do
+    case async_helper_module().yield(task, @tx_validation_timeout * 2) ||
+           async_helper_module().shutdown(task, :brutal_kill) do
       {:ok, res} -> res
       {:exit, reason} -> {:error, reason}
       nil -> {:error, :timeout}

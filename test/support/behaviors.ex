@@ -35,4 +35,26 @@ defmodule ArchethicClient.Test.Behaviors do
     @callback subscribe_transaction_confirmed(ArchethicClient.Crypto.hex_address()) :: ArchethicClient.Request.t()
     @callback subscribe_transaction_error(ArchethicClient.Crypto.hex_address()) :: ArchethicClient.Request.t()
   end
+
+  defmodule AsyncHelper do
+    @moduledoc """
+    Behavior definition for asynchronous operations to enable mocking.
+    """
+    # Matches Task.Supervisor.async_nolink(supervisor, fun)
+    # The mock will likely return the result of fun directly or a controlled value.
+    # Or Task.t() | {:error, any}
+    @callback async_nolink(supervisor_name :: atom, fun :: (-> any)) :: any()
+
+    # Matches Task.Supervisor.async_stream_nolink(supervisor, inputs, fun, opts)
+    @callback async_stream_nolink(
+                supervisor_name :: atom,
+                inputs :: Enumerable.t(),
+                fun :: (any() -> any),
+                opts :: keyword()
+              ) :: Enumerable.t()
+
+    @callback yield(task :: any(), timeout :: timeout()) :: {:ok, any()} | {:exit, any()} | nil
+    @callback shutdown(task :: any(), reason_or_timeout :: timeout() | :brutal_kill | {:brutal_kill, any()}) ::
+                :ok | {:exit, any()} | nil
+  end
 end
